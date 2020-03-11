@@ -1,0 +1,2 @@
+# ScalesManager
+Scales Manager
