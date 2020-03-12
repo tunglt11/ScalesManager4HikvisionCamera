@@ -50,7 +50,10 @@ namespace ScalesManager.Component
         private void CaptureCameraCallback()
         {
             frame = new Mat();
-            capture = new VideoCapture();           
+            capture = new VideoCapture();            
+            //capture.Set(CaptureProperty.FrameWidth, 640);
+            //capture.Set(CaptureProperty.FrameHeight, 480);
+            //capture.Set(CaptureProperty.Fps, 25);
 
             if (string.IsNullOrEmpty(cameraAddress))
                 capture.Open(0);
@@ -59,20 +62,29 @@ namespace ScalesManager.Component
 
             if (capture.IsOpened())
             {
-                isCameraRunning = true;
-                OpenCvSharp.Size newSize = new OpenCvSharp.Size(854, 480);
+                isCameraRunning = true;                
+                //ImageEncodingParam encodeParam = new ImageEncodingParam(ImwriteFlags.JpegQuality, 50);
+                
                 try
                 {                    
                     while (isCameraRunning)
                     {
                         capture.Read(frame);
                         
-                        frame.Resize(newSize);
-
+                        if (frame.Empty())
+                            continue;                    
+                                                
                         if (pictureBox.Image != null)
                             pictureBox.Image.Dispose();
 
-                        pictureBox.Image = BitmapConverter.ToBitmap(frame);
+                        //byte[] data = frame.ImEncode(".jpeg", encodeParam);
+                        //using (var ms = new MemoryStream(data))
+                        //{
+                        //    pictureBox.Image = Image.FromStream(ms);
+                        //}
+
+                        pictureBox.Image = BitmapConverter.ToBitmap(frame.Resize(new OpenCvSharp.Size(frame.Width / 4, frame.Height / 4)));
+                        //pictureBox.Image = BitmapConverter.ToBitmap(frame);
 
                         if (pictureBox.Image != null)
                             pictureBox.Refresh();
@@ -85,6 +97,7 @@ namespace ScalesManager.Component
                     isCameraRunning = false;
                     log.Error("Camera capture error: " + cameraAddress);
                     log.Error(ex.Message);
+                    log.Error(ex.StackTrace);
                 }
             }
         }
@@ -92,8 +105,8 @@ namespace ScalesManager.Component
         public Bitmap TakeSnapshot()
         {
             try
-            {                
-                return (isCameraRunning) ? BitmapConverter.ToBitmap(frame) : null;
+            {
+                return (isCameraRunning && !frame.Empty()) ? BitmapConverter.ToBitmap(frame.Resize(new OpenCvSharp.Size(1280, 720))) : null;
             }
             catch(Exception ex)
             {

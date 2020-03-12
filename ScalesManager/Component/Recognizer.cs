@@ -152,7 +152,7 @@ namespace ScalesManager.Component
                 byte[] bytes = (byte[])converter.ConvertTo(img, typeof(byte[]));
 
                 //compress image
-                //byte[] compressed = Compress(bytes);
+                byte[] compressed = Compress(bytes);
 
                 log.Info("Bat dau xu ly bien so vuong");
 
@@ -160,7 +160,7 @@ namespace ScalesManager.Component
                 //Task<string> recognizeTask = Task.Run(() => ProcessImage(compressed));
                 //recognizeTask.Wait();
                 //string task_result = recognizeTask.Result;
-                string task_result = await Task.Run(() => ProcessImage(bytes));
+                string task_result = await Task.Run(() => ProcessImage(compressed));
 
                 //string task_result = ProcessImageImmediately(compressed);
 
@@ -227,7 +227,7 @@ namespace ScalesManager.Component
                 {
                     var qualityEncoder = System.Drawing.Imaging.Encoder.Quality;
                     var encoderParameters = new EncoderParameters(1);
-                    encoderParameters.Param[0] = new EncoderParameter(qualityEncoder, 50L);
+                    encoderParameters.Param[0] = new EncoderParameter(qualityEncoder, 100L);
                     image.Save(outStream, jpgEncoder, encoderParameters);
                 }
 
