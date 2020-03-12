@@ -1,10 +1,12 @@
-﻿using OpenCvSharp;
+﻿using log4net;
+using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using OpenCvSharp.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,11 +20,11 @@ namespace ScalesManager.Component
         private Mat frame;
         private bool isCameraRunning = false;        
         private readonly string cameraAddress;
-        private PictureBox pictureBox;
+        private ProtectedPictureBox pictureBox;
         private bool IsCameraRunning { get => isCameraRunning; set => isCameraRunning = value; }
-        private static object _locker = new object();
+        private static readonly ILog log = LogManager.GetLogger(typeof(Camera));
 
-        public Camera(String cameraAddress, PictureBox pictureBox)
+        public Camera(String cameraAddress, ProtectedPictureBox pictureBox)
         {
             this.cameraAddress = cameraAddress;
             this.pictureBox = pictureBox;
@@ -48,7 +50,7 @@ namespace ScalesManager.Component
         private void CaptureCameraCallback()
         {
             frame = new Mat();
-            capture = new VideoCapture();
+            capture = new VideoCapture();           
 
             if (string.IsNullOrEmpty(cameraAddress))
                 capture.Open(0);
@@ -58,32 +60,31 @@ namespace ScalesManager.Component
             if (capture.IsOpened())
             {
                 isCameraRunning = true;
+                OpenCvSharp.Size newSize = new OpenCvSharp.Size(854, 480);
                 try
-                {
+                {                    
                     while (isCameraRunning)
-                    {                    
+                    {
                         capture.Read(frame);
+                        
+                        frame.Resize(newSize);
 
-                        lock (_locker)
-                        {
-                            if (pictureBox.Image != null)
-                                pictureBox.Image.Dispose();
-                                //pictureBox.Invoke(new System.Action(() => pictureBox.Image.Dispose()));
-                                                            
-                            //pictureBox.Invoke(new System.Action(() => pictureBox.Image = BitmapConverter.ToBitmap(frame)));
-                            pictureBox.Image = BitmapConverter.ToBitmap(frame);
+                        if (pictureBox.Image != null)
+                            pictureBox.Image.Dispose();
 
-                            if (pictureBox.Image != null)
-                                pictureBox.Refresh();
-                                //pictureBox.Invoke(new System.Action(() => pictureBox.Refresh()));
-                        }                       
+                        pictureBox.Image = BitmapConverter.ToBitmap(frame);
+
+                        if (pictureBox.Image != null)
+                            pictureBox.Refresh();
+
+                        Thread.Sleep(10);
                     }
                 }
                 catch (Exception ex)
                 {
                     isCameraRunning = false;
-                    Console.WriteLine("Camera capture error");
-                    Console.Write(ex.Message);
+                    log.Error("Camera capture error: " + cameraAddress);
+                    log.Error(ex.Message);
                 }
             }
         }
@@ -91,13 +92,13 @@ namespace ScalesManager.Component
         public Bitmap TakeSnapshot()
         {
             try
-            {
+            {                
                 return (isCameraRunning) ? BitmapConverter.ToBitmap(frame) : null;
             }
             catch(Exception ex)
             {
-                Console.WriteLine("Can not take snapshot from camera: " + cameraAddress);
-                Console.WriteLine(ex.StackTrace);
+                log.Error("Can not take snapshot from camera: " + cameraAddress);
+                log.Error(ex.StackTrace);
             }
             return null;
         }        

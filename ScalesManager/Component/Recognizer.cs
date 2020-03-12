@@ -112,7 +112,7 @@ namespace ScalesManager.Component
             //client.Timeout = TimeSpan.FromSeconds(12);
 
             HttpResponseMessage response = 
-                client.PostAsync("https://api.openalpr.com/v2/recognize_bytes?recognize_vehicle=1&country=eu&secret_key=" + SECRET_KEY, content).Result;            
+                client.PostAsync("https://api.openalpr.com/v2/recognize_bytes?recognize_vehicle=0&country=eu&secret_key=" + SECRET_KEY, content).Result;            
             
             var byteArray = response.Content.ReadAsByteArrayAsync().Result;            
             var responseString = Encoding.UTF8.GetString(byteArray, 0, byteArray.Length);
@@ -151,8 +151,8 @@ namespace ScalesManager.Component
                 ImageConverter converter = new ImageConverter();
                 byte[] bytes = (byte[])converter.ConvertTo(img, typeof(byte[]));
 
-               //compress image
-                byte[] compressed = Compress(bytes);
+                //compress image
+                //byte[] compressed = Compress(bytes);
 
                 log.Info("Bat dau xu ly bien so vuong");
 
@@ -160,7 +160,7 @@ namespace ScalesManager.Component
                 //Task<string> recognizeTask = Task.Run(() => ProcessImage(compressed));
                 //recognizeTask.Wait();
                 //string task_result = recognizeTask.Result;
-                string task_result = await Task.Run(() => ProcessImage(compressed));
+                string task_result = await Task.Run(() => ProcessImage(bytes));
 
                 //string task_result = ProcessImageImmediately(compressed);
 
