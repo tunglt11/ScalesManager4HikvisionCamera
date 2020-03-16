@@ -106,7 +106,29 @@ namespace ScalesManager.Component
         {
             try
             {
-                return (isCameraRunning && !frame.Empty()) ? BitmapConverter.ToBitmap(frame.Resize(new OpenCvSharp.Size(1280, 720))) : null;
+                if (isCameraRunning)
+                {
+                    Mat snapshot = frame;
+                    if (!snapshot.Empty())
+                        return BitmapConverter.ToBitmap(snapshot);
+
+                    // nếu chưa chụp được, lấy thêm 3 lần
+                    for (int i = 0; i < 2; i++)
+                    {
+                        snapshot = frame;
+                        if (!snapshot.Empty())
+                            break;
+                        Thread.Sleep(10);
+                    }
+                    if (!snapshot.Empty())
+                        return BitmapConverter.ToBitmap(snapshot);
+                    else
+                        log.Info("Cannot take snapshot from camera: " + cameraAddress);
+                }
+                else
+                {
+                    log.Info("Cam " + cameraAddress + " NOT running");
+                }
             }
             catch(Exception ex)
             {

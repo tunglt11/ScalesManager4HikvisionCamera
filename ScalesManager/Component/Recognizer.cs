@@ -227,7 +227,7 @@ namespace ScalesManager.Component
                 {
                     var qualityEncoder = System.Drawing.Imaging.Encoder.Quality;
                     var encoderParameters = new EncoderParameters(1);
-                    encoderParameters.Param[0] = new EncoderParameter(qualityEncoder, 100L);
+                    encoderParameters.Param[0] = new EncoderParameter(qualityEncoder, 90L);
                     image.Save(outStream, jpgEncoder, encoderParameters);
                 }
 
